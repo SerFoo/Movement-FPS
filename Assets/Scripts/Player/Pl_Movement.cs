@@ -14,6 +14,8 @@ public class Pl_Movement : MonoBehaviour
     const string mY = "Mouse Y";
     private PL_Player player = new PL_Player();
     private Collider col;
+    private float speed;
+    public bool isSprinting;
 
     void Start()
     {
@@ -27,18 +29,21 @@ public class Pl_Movement : MonoBehaviour
     {
        
 
-        //Base Movement
+        //Base Movement values
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
         Vector3 pl_input = new Vector3(moveHorizontal, 0f, moveVertical);
 
-
-        Vector3 movement = transform.TransformDirection(pl_input) * player.speed;
+         //Sprinting
+        if(Input.GetKey(KeyCode.LeftShift) && isGrounded())
+        {
+            isSprinting = true;
+        } else {isSprinting = false;}
+        //Movement and velocity cap
+        Vector3 movement = transform.TransformDirection(pl_input) * speed;
         rb.velocity =  new Vector3(movement.x, rb.velocity.y, movement.z);
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, player.maxVel);//Speed Cap
-
-        
-
+        CapVelocity();        
+        //Camera Rotation
         pl_rotate.x += Input.GetAxis(mX) * player.camSens;
         pl_rotate.y += Input.GetAxis(mY) * player.camSens;
         pl_rotate.y = Mathf.Clamp(pl_rotate.y, -player.yRotationLimit, player.yRotationLimit);
@@ -53,19 +58,35 @@ public class Pl_Movement : MonoBehaviour
             rb.AddForce(Vector3.up * player.jumpForce, ForceMode.Impulse);//Jumping
             Debug.Log("Space");
         }
-        
-        if(rb.velocity.y < 0)
-        {
-            rb.velocity += Vector3.up * Physics.gravity.y * (player.fallMultipler -1 ) * Time.deltaTime;
-        } else if (rb.velocity.y > 0 && isGrounded() == false)
-        {
-            rb.velocity += Vector3.up * Physics.gravity.y * (player.lowJumpMutli - 1) * Time.deltaTime;
-        }
 
+       
     }
     bool isGrounded()//Grounded Detection
     {
         return Physics.Raycast(transform.position, -Vector3.up, distToGround + 0.1f);
+    }
+
+    void CapVelocity()
+    { 
+        //Base Speed Cap
+        float capXVel = Mathf.Min(Mathf.Abs(rb.velocity.x), player.maxVel) * Mathf.Sign(rb.velocity.x);
+        float capYVel = rb.velocity.y;
+        float capZVel = Mathf.Min(Mathf.Abs(rb.velocity.z), player.maxVel) * Mathf.Sign(rb.velocity.z);
+        //Sprinting Speed Cap
+        float ScapXVel = Mathf.Min(Mathf.Abs(rb.velocity.x), player.maxVel* player.sprintMulti) * Mathf.Sign(rb.velocity.x);
+        float ScapYVel = rb.velocity.y;
+        float ScapZVel = Mathf.Min(Mathf.Abs(rb.velocity.z), player.maxVel* player.sprintMulti) * Mathf.Sign(rb.velocity.z);
+
+        if(!isSprinting)
+        {
+            rb.velocity = new Vector3(capXVel,capYVel,capZVel);
+            speed = player.speed;
+        } else if(isSprinting)
+        {
+            rb.velocity = new Vector3(ScapXVel,ScapYVel,ScapZVel);
+            speed = player.getSprintSpeed();
+        }
+
     }
 
 }
