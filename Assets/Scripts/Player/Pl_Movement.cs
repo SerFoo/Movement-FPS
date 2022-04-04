@@ -25,17 +25,9 @@ public class Pl_Movement : MonoBehaviour
 
     void Update()
     {
-        //jumping
-        if(Input.GetKeyDown(KeyCode.Space) && isGrounded())
-        {
-            rb.AddForce(Vector3.up * player.jumpForce, ForceMode.Impulse);//Jumping
-            Debug.Log("Space");
-        }
+       
 
-    }
-
-    void FixedUpdate()
-    {
+        //Base Movement
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
         Vector3 pl_input = new Vector3(moveHorizontal, 0f, moveVertical);
@@ -55,26 +47,25 @@ public class Pl_Movement : MonoBehaviour
 
         transform.localRotation = xQuat * yQuat;
         
-        HeadBobbing();
-
+        //Jumping
+        if(Input.GetKeyDown(KeyCode.Space) && isGrounded())
+        {
+            rb.AddForce(Vector3.up * player.jumpForce, ForceMode.Impulse);//Jumping
+            Debug.Log("Space");
+        }
+        
+        if(rb.velocity.y < 0)
+        {
+            rb.velocity += Vector3.up * Physics.gravity.y * (player.fallMultipler -1 ) * Time.deltaTime;
+        } else if (rb.velocity.y > 0 && isGrounded() == false)
+        {
+            rb.velocity += Vector3.up * Physics.gravity.y * (player.lowJumpMutli - 1) * Time.deltaTime;
+        }
 
     }
     bool isGrounded()//Grounded Detection
     {
         return Physics.Raycast(transform.position, -Vector3.up, distToGround + 0.1f);
     }
-   void HeadBobbing()//Head Bobbing Function
-   {
-       if(Mathf.Abs(rb.velocity.x) > 0.1f || Mathf.Abs(rb.velocity.z) > 0.1f )
-       {
-           timer += Time.fixedDeltaTime * player.walkingBobSpeed;
-           cam.transform.localPosition = new Vector3(cam.transform.localPosition.x, defaultBobY + Mathf.Sin(timer) * player.bobbingSpeed, cam.transform.localPosition.z);
-       }
-       else
-       {
-           timer = 0;
-           cam.transform.localPosition = new Vector3(cam.transform.localPosition.x, Mathf.Lerp(cam.transform.localPosition.y,defaultBobY,Time.fixedDeltaTime * player.walkingBobSpeed), cam.transform.localPosition.z);
-       }
 
-   }
 }
