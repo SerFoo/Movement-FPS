@@ -7,15 +7,13 @@ public class Pl_Movement : MonoBehaviour
     private Camera cam;
     private Rigidbody rb;
     private Vector2 pl_rotate;
-    private float defaultBobY = 1;
     private float distToGround;//Raycast length for grounded detection
-    private float timer = 0;
     const string mX = "Mouse X";
     const string mY = "Mouse Y";
     private PL_Player player = new PL_Player();
     private Collider col;
     private float speed;
-    public bool isSprinting;
+    private bool isSprinting;
 
     void Start()
     {
@@ -27,8 +25,6 @@ public class Pl_Movement : MonoBehaviour
 
     void Update()
     {
-       
-
         //Base Movement values
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
@@ -56,7 +52,6 @@ public class Pl_Movement : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Space) && isGrounded())
         {
             rb.AddForce(Vector3.up * player.jumpForce, ForceMode.Impulse);//Jumping
-            Debug.Log("Space");
         }
 
        
